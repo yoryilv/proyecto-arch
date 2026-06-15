@@ -1,34 +1,35 @@
 module datapath(input  clk, reset,
-                input  [1:0]  ResultSrcW, 
-                input  PCSrcE, ALUSrcBE, ALUSrcAE,
+                input  [1:0]  ResultSrcW,
+                input  PCSrcE, ALUSrcBE,
                 input  RegWriteW,
                 input  [2:0]  ImmSrcD, 
                 input  [3:0]  ALUControlE,
-                output ZeroE, NegE
-                output [31:0] PCF,
                 input  [31:0] InstrF,
+                input  [31:0] ReadDataM,
+                input [1:0] ForwardAE, ForwardBE,
+                input StallF, StallD, FlushD, FlushE,
+                output ZeroE, NegE,
+                output [31:0] PCF,
                 output [31:0] ALUResultM, WriteDataM, InstrD,
-                input  [31:0] ReadDataM);
+                output [4:0] RS1E, RS2E, RDE, RDM, RDW
+                );
   
   localparam WIDTH = 32; // Define a local parameter for bus width
 
   wire [31:0] PCNext, PCPlus4, PCTarget; 
   wire [31:0] ImmExtD; 
-  wire [31:0] RD1D, RD2D, SrcAE, SrcBE; 
+  wire [31:0] RD1D, RD2D, SrcAE, SrcBE, SrcBEfwd;
   wire [31:0] Result, ALUResultE;
   
   wire [31:0] PCD, PCPlus4D;
-  wire [4:0] RS1E, RS2E, RDE;
   wire [31:0] RD1E, RD2E, PCE,ImmExtE, PCPlus4E;
   wire [31:0] PCPlus4M;
-  wire [4:0]  RDM;
   wire [31:0] ALUResultW, ReadDataW, PCPlus4W;
-  wire [4:0]  RDW;
 
-
-  flopr #(WIDTH) pcreg(
+  flopenr #(WIDTH) pcreg(
     .clk(clk), 
-    .reset(reset), 
+    .reset(reset),
+    .enable(~StallF),
     .d(PCNext), 
     .q(PCF)
   );
@@ -39,16 +40,18 @@ module datapath(input  clk, reset,
     .y(PCPlus4)
   ); 
 
-  flopr #(96) FD(
+  flopenr #(96) FD(
     .clk(clk), 
-    .reset(reset), 
+    .reset(reset | FlushD),
+    .enable(~StallD),
     .d({PCF, PCPlus4, InstrF}), 
     .q({PCD, PCPlus4D, InstrD})
   );
 
-  flopr #(175) DE(
+  flopenr #(175) DE(
     .clk(clk), 
-    .reset(reset), 
+    .reset(reset | FlushE), 
+    .enable(~StallD),
     .d({RD1D, RD2D, PCD, InstrD[19:15], InstrD[24:20], InstrD[11:7], ImmExtD, PCPlus4D}), 
     .q({RD1E, RD2E, PCE, RS1E, RS2E, RDE, ImmExtE, PCPlus4E})
   );
@@ -101,20 +104,29 @@ module datapath(input  clk, reset,
   );
 
   // ALU logic
-  mux2 #(WIDTH)  srcamux(
+  mux3 #(WIDTH)  srcamux(
     .d0(RD1E), 
-    .d1(32'b0), 
-    .s(ALUSrcAE), 
+    .d1(Result),
+    .d2(ALUResultM),
+    .s(ForwardAE), 
     .y(SrcAE)
   ); 
 
   // ALU logic
-  mux2 #(WIDTH)  srcbmux(
+  mux3 #(WIDTH)  srcbmux(
     .d0(RD2E), 
-    .d1(ImmExtE), 
-    .s(ALUSrcBE), 
+    .d1(Result), 
+    .d2(ALUResultM),
+    .s(ForwardBE), 
+    .y(SrcBEfwd)
+  );
+
+  mux2 #(WIDTH) srcb2mux(
+    .d0(SrcBEfwd),
+    .d1(ImmExtE),
+    .s(ALUSrcBE),
     .y(SrcBE)
-  ); 
+  );
 
   alu         alu(
     .a(SrcAE), 

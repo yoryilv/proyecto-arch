@@ -5,13 +5,39 @@ module riscvsingle(input  clk, reset,
                    output [31:0] WriteDataM, ALUResultM, 
                    input  [31:0] ReadDataM);
   
-  wire ALUSrcBE, ALUSrcAE, RegWriteW;
+  wire ALUSrcBE, RegWriteW;
   wire BranchE, JumpE, ZeroE, NegE; 
   wire [1:0] ResultSrcW;
   wire [3:0] ALUControlE;
   wire [2:0] ImmSrcD; 
   wire       PCSrcE;
   wire [31:0] InstrD;
+
+  wire [1:0] ForwardAE, ForwardBE;
+  wire StallF, StallD, FlushD, FlushE;
+  wire [1:0] ResultSrcE;
+  wire RegWriteM;
+  wire [4:0] RS1E, RS2E, RDE, RDM, RDW;
+
+    hazard hu(
+    .RS1D(InstrD[19:15]),
+    .RS2D(InstrD[24:20]),
+    .RS1E(RS1E),
+    .RS2E(RS2E),
+    .RDE(RDE),
+    .RDM(RDM),
+    .RDW(RDW),
+    .RegWriteM(RegWriteM),
+    .RegWriteW(RegWriteW),
+    .ResultSrcE(ResultSrcE),
+    .PCSrcE(PCSrcE),
+    .ForwardAE(ForwardAE),
+    .ForwardBE(ForwardBE),
+    .StallF(StallF),
+    .StallD(StallD),
+    .FlushD(FlushD),
+    .FlushE(FlushE)
+    );
   
 
   controller c(
@@ -25,14 +51,15 @@ module riscvsingle(input  clk, reset,
     .MemWriteM(MemWriteM),
     .PCSrcE(PCSrcE),
     .ALUSrcBE(ALUSrcBE),
-    .ALUSrcAE(ALUSrcAE),
     .RegWriteW(RegWriteW),
     .JumpE(JumpE),
     .BranchE(BranchE),
     .ImmSrcD(ImmSrcD),
     .ALUControlE(ALUControlE),
-    .NegE(NegE)
-  );
+    .NegE(NegE),
+    .ResultSrcE(ResultSrcE),
+    .RegWriteM(RegWriteM)
+    );
 
   datapath dp(
     .clk(clk),
@@ -40,7 +67,6 @@ module riscvsingle(input  clk, reset,
     .ResultSrcW(ResultSrcW),
     .PCSrcE(PCSrcE),
     .ALUSrcBE(ALUSrcBE),
-    .ALUSrcAE(ALUSrcAE),
     .RegWriteW(RegWriteW),
     .ImmSrcD(ImmSrcD),
     .ALUControlE(ALUControlE),
@@ -51,7 +77,18 @@ module riscvsingle(input  clk, reset,
     .ALUResultM(ALUResultM),
     .WriteDataM(WriteDataM),
     .ReadDataM(ReadDataM),
-    .NegE(NegE)
+    .NegE(NegE),
+    .ForwardAE(ForwardAE),
+    .ForwardBE(ForwardBE),
+    .StallF(StallF),
+    .StallD(StallD),
+    .FlushD(FlushD),
+    .FlushE(FlushE),
+    .RS1E(RS1E),
+    .RS2E(RS2E),
+    .RDE(RDE),
+    .RDM(RDM),
+    .RDW(RDW)
     );
 
 

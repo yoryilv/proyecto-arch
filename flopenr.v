@@ -1,4 +1,4 @@
-module flopr (input  clk, reset, enable
+module flopenr (input  clk, reset, enable,
                input  [WIDTH-1:0] d, 
                output reg [WIDTH-1:0] q);
 
@@ -6,6 +6,6 @@ module flopr (input  clk, reset, enable
 
   always @(posedge clk or posedge reset) begin 
     if (reset) q <= 0; 
-    else (enable)     q <= d; 
+    else if (enable)     q <= d; 
   end
 endmodule

@@ -4,9 +4,10 @@ module controller(input clk, reset,
                   input        funct7b5D,
                   input        ZeroE, NegE,
                   output [1:0] ResultSrcW, 
-                  output MemWriteM,
+                  output MemWriteM, RegWriteM,
                   output PCSrcE, ALUSrcBE, ALUSrcAE,
                   output RegWriteW, JumpE, BranchE,
+                  output [1:0] ResultSrcE,
                   output [2:0] ImmSrcD, 
                   output [3:0] ALUControlE);
   
@@ -18,9 +19,6 @@ module controller(input clk, reset,
   wire [3:0] ALUControlD;
 
   wire RegWriteE, MemWriteE;
-  wire [1:0] ResultSrcE;
-
-  wire RegWriteM;
   wire [1:0] ResultSrcM;
 
   wire [2:0] funct3E;
