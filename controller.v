@@ -3,11 +3,12 @@ module controller(input clk, reset,
                   input  [2:0] funct3D,
                   input        funct7b5D,
                   input        ZeroE, NegE,
+                  input StallD, FlushE,
                   output [1:0] ResultSrcW, 
                   output MemWriteM, RegWriteM,
                   output PCSrcE, ALUSrcBE, ALUSrcAE,
                   output RegWriteW, JumpE, BranchE,
-                  output [1:0] ResultSrcE,
+                  output [1:0] ResultSrcE, ResultSrcD,
                   output [2:0] ImmSrcD, 
                   output [3:0] ALUControlE);
   
@@ -15,7 +16,6 @@ module controller(input clk, reset,
   wire       BranchD, JumpD;
   wire ALUSrcAD, ALUSrcBD;
   wire RegWriteD, MemWriteD;
-  wire [1:0] ResultSrcD;
   wire [3:0] ALUControlD;
 
   wire RegWriteE, MemWriteE;
@@ -46,9 +46,11 @@ module controller(input clk, reset,
   );
 
 
-  flopr #(15) DE_cu (
+  flopenrc #(15) DE_cu (
     .clk(clk),
     .reset(reset),
+    .enable(~StallD),
+    .clear(FlushE),
     .d({RegWriteD, ResultSrcD, MemWriteD, JumpD, BranchD, ALUControlD, ALUSrcAD, ALUSrcBD, funct3D}),
     .q({RegWriteE, ResultSrcE, MemWriteE, JumpE, BranchE, ALUControlE, ALUSrcAE, ALUSrcBE, funct3E})
   );

@@ -26,7 +26,6 @@ assign lwStall = ResultSrcE[0] & ((RS1D == RDE) | (RS2D == RDE));
 
 assign StallF = lwStall;
 assign StallD = lwStall;
-
 assign FlushD = PCSrcE;
 assign FlushE = lwStall | PCSrcE;
 

@@ -40,26 +40,28 @@ module datapath(input  clk, reset,
     .y(PCPlus4)
   ); 
 
-  flopenr #(96) FD(
-    .clk(clk), 
-    .reset(reset | FlushD),
+  flopenrc #(96) FD(
+    .clk(clk),
+    .reset(reset),
     .enable(~StallD),
-    .d({PCF, PCPlus4, InstrF}), 
+    .clear(FlushD),
+    .d({PCF, PCPlus4, InstrF}),
     .q({PCD, PCPlus4D, InstrD})
   );
 
-  flopenr #(175) DE(
-    .clk(clk), 
-    .reset(reset | FlushE), 
+  flopenrc #(175) DE(
+    .clk(clk),
+    .reset(reset),
     .enable(~StallD),
-    .d({RD1D, RD2D, PCD, InstrD[19:15], InstrD[24:20], InstrD[11:7], ImmExtD, PCPlus4D}), 
+    .clear(FlushE),
+    .d({RD1D, RD2D, PCD, InstrD[19:15], InstrD[24:20], InstrD[11:7], ImmExtD, PCPlus4D}),
     .q({RD1E, RD2E, PCE, RS1E, RS2E, RDE, ImmExtE, PCPlus4E})
   );
 
   flopr #(101) EM(
     .clk(clk), 
     .reset(reset), 
-    .d({ALUResultE, RD2E, RDE, PCPlus4E}), 
+    .d({ALUResultE, SrcBEfwd, RDE, PCPlus4E}), 
     .q({ALUResultM, WriteDataM, RDM, PCPlus4M})
   );
 
@@ -103,14 +105,22 @@ module datapath(input  clk, reset,
     .immext(ImmExtD)
   );
 
-  // ALU logic
-  mux3 #(WIDTH)  srcamux(
-    .d0(RD1E), 
+  // mux forwarding para A
+  mux3 #(WIDTH) srcamux(
+    .d0(RD1E),
     .d1(Result),
     .d2(ALUResultM),
-    .s(ForwardAE), 
+    .s(ForwardAE),
+    .y(SrcAEfwd)
+  );
+
+  //elige entre el valor y 0 (para lui)
+  mux2 #(WIDTH) srca2mux(
+    .d0(SrcAEfwd),
+    .d1(32'b0),
+    .s(ALUSrcAE),
     .y(SrcAE)
-  ); 
+  );
 
   // ALU logic
   mux3 #(WIDTH)  srcbmux(
