@@ -1,6 +1,6 @@
 module datapath(input  clk, reset,
                 input  [1:0]  ResultSrcW,
-                input  PCSrcE, ALUSrcBE, ALUSrcAE
+                input  PCSrcE, ALUSrcBE, ALUSrcAE,
                 input  RegWriteW,
                 input  [2:0]  ImmSrcD, 
                 input  [3:0]  ALUControlE,
@@ -25,6 +25,7 @@ module datapath(input  clk, reset,
   wire [31:0] RD1E, RD2E, PCE,ImmExtE, PCPlus4E;
   wire [31:0] PCPlus4M;
   wire [31:0] ALUResultW, ReadDataW, PCPlus4W;
+
 
   flopenr #(WIDTH) pcreg(
     .clk(clk), 
