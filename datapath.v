@@ -1,6 +1,6 @@
 module datapath(input  clk, reset,
                 input  [1:0]  ResultSrcW,
-                input  PCSrcE, ALUSrcBE,
+                input  PCSrcE, ALUSrcBE, ALUSrcAE
                 input  RegWriteW,
                 input  [2:0]  ImmSrcD, 
                 input  [3:0]  ALUControlE,
@@ -18,7 +18,7 @@ module datapath(input  clk, reset,
 
   wire [31:0] PCNext, PCPlus4, PCTarget; 
   wire [31:0] ImmExtD; 
-  wire [31:0] RD1D, RD2D, SrcAE, SrcBE, SrcBEfwd;
+  wire [31:0] RD1D, RD2D, SrcAE, SrcAEfwd, SrcBE, SrcBEfwd;
   wire [31:0] Result, ALUResultE;
   
   wire [31:0] PCD, PCPlus4D;
