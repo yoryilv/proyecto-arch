@@ -158,7 +158,7 @@ endmodule
 
 module datapath(input  clk, reset,
                 input  [1:0]  ResultSrcW,
-                input  PCSrcE, ALUSrcBE, ALUSrcAE
+                input  PCSrcE, ALUSrcBE, ALUSrcAE,
                 input  RegWriteW,
                 input  [2:0]  ImmSrcD, 
                 input  [3:0]  ALUControlE,
@@ -504,7 +504,7 @@ module riscvsingle(input  clk, reset,
                    output [31:0] WriteDataM, ALUResultM, 
                    input  [31:0] ReadDataM);
   
-  wire ALUSrcBE, RegWriteW;
+  wire ALUSrcBE, ALUSrcAE, RegWriteW;
   wire BranchE, JumpE, ZeroE, NegE; 
   wire [1:0] ResultSrcW;
   wire [3:0] ALUControlE;
@@ -551,6 +551,7 @@ module riscvsingle(input  clk, reset,
     .MemWriteM(MemWriteM),
     .PCSrcE(PCSrcE),
     .ALUSrcBE(ALUSrcBE),
+    .ALUSrcAE(ALUSrcAE),
     .RegWriteW(RegWriteW),
     .JumpE(JumpE),
     .BranchE(BranchE),
@@ -628,4 +629,3 @@ module top(input  clk, reset,
     .rd(ReadDataM)
   ); 
 endmodule
-
