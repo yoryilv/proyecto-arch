@@ -26,6 +26,23 @@ module datapath(input  clk, reset,
   wire [31:0] PCPlus4M;
   wire [31:0] ALUResultW, ReadDataW, PCPlus4W;
 
+  wire IsCompressed = (InstrF[1:0] != 2'b11);
+  wire [31:0] PCIncr = IsCompressed ? 32'd2 : 32'd4;
+  wire [31:0] InstrDecomp, InstrFinal;
+
+  decompressor dec(
+    .InstrF(InstrF[15:0]),
+    .InstrD(InstrDecomp)  
+  );
+
+
+  mux2 #(32) instrmux(
+    .d0(InstrF), //pasa normal
+    .d1(InstrDecomp), //pasa expandida
+    .s(IsCompressed),
+    .y(InstrFinal)
+  );
+
 
   flopenr #(WIDTH) pcreg(
     .clk(clk), 
@@ -37,7 +54,7 @@ module datapath(input  clk, reset,
 
   adder pcadd4(
     .a(PCF), 
-    .b({WIDTH{1'b0}} + 4), // Using WIDTH parameter for constant 4
+    .b(PCIncr), // suma 2 IsCompressed, 4 
     .y(PCPlus4)
   ); 
 
@@ -46,7 +63,7 @@ module datapath(input  clk, reset,
     .reset(reset),
     .enable(~StallD),
     .clear(FlushD),
-    .d({PCF, PCPlus4, InstrF}),
+    .d({PCF, PCPlus4, InstrFinal}),
     .q({PCD, PCPlus4D, InstrD})
   );
 
