@@ -1,30 +1,42 @@
 module testbench();
-  reg  [15:0] cinstr;
-  wire [31:0] expanded;
+  reg clk, reset;
+  wire [31:0] WriteData, DataAdr;
+  wire MemWrite;
 
-  decompressor dut(.InstrF(cinstr), .InstrD(expanded));
+  top dut(
+    .clk(clk), .reset(reset),
+    .WriteData(WriteData), .DataAdr(DataAdr), .MemWrite(MemWrite)
+  );
+
+  
+  always #5 clk = ~clk;
+  
 
   initial begin
-    // C.ADDI x8, 1  -> esperado addi x8,x8,1 = 0x00140413
-    cinstr = 16'h0405; #10;
-    $display("C.ADDI: in=%h out=%h", cinstr, expanded);
+    clk = 0;
+    reset = 1;
+    #22;
+    reset = 0;
+  end
 
-    // C.ADD x8, x9  -> esperado add x8,x8,x9 = 0x00940433
-    cinstr = 16'h9426; #10;
-    $display("C.ADD:  in=%h out=%h", cinstr, expanded);
-    
-    // C.SUB x8, x9 -> sub x8,x8,x9 = 0x40940433
-    cinstr = 16'h8c05; #10;  // verifica el encoding de c.sub
-    $display("C.SUB:  in=%h out=%h", cinstr, expanded);
-
-    // C.AND x8, x9 -> and x8,x8,x9 = 0x0094f433
-    cinstr = 16'h8c65; #10;
-    $display("C.AND:  in=%h out=%h", cinstr, expanded);
-
-    // C.OR x8, x9 -> or x8,x8,x9 = 0x0094e433
-    cinstr = 16'h8c45; #10;
-    $display("C.OR:   in=%h out=%h", cinstr, expanded);
-
+  initial begin
+    $dumpfile("dump.vcd");
+    $dumpvars;
+    #400;
+    $display("RESULTADO (Programa comprimidas):");
+    $display("  mem[0]  = %0d (esperado 35)",   dut.dmem.RAM[0]);
+    $display("  mem[4]  = %0d (esperado 2)",    dut.dmem.RAM[1]);
+    $display("  mem[8]  = %0d (esperado 2)",    dut.dmem.RAM[2]);
+    $display("  mem[12] = %0d (esperado 15)",   dut.dmem.RAM[3]);
+    $display("  mem[16] = %0d (esperado 42)",   dut.dmem.RAM[4]);
+    $display("  mem[20] = %0d (esperado 96)",   dut.dmem.RAM[5]);
+    $display("  mem[24] = %h (esperado 2000)",  dut.dmem.RAM[6]);
+    if (dut.dmem.RAM[0]===35 && dut.dmem.RAM[1]===2 && dut.dmem.RAM[2]===2 &&
+        dut.dmem.RAM[3]===15 && dut.dmem.RAM[4]===42 && dut.dmem.RAM[5]===96 &&
+        dut.dmem.RAM[6]===32'h00002000)
+      $display("  >> TEST PASSED");
+    else
+      $display("  >> TEST FAILED");
     $finish;
   end
 endmodule
