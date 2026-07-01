@@ -7,6 +7,14 @@ reg [20:0] imm_j;
     always @ (*) begin
         case ({InstrF[1:0], InstrF[15:13]}) // quadrant & funct3
             
+            5'b01_010: InstrD = {
+                {6{InstrF[12]}}, InstrF[12], InstrF[6:2],
+                5'b00000,
+                3'b000,
+                InstrF[11:7],
+                7'b0010011
+            };
+            
             // C.ADDI
             5'b01_000: InstrD = {
                 {6{InstrF[12]}},
